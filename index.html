@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Music Experience</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Vinyl Music Player</title>
 
 <style>
+
 *{
 margin:0;
 padding:0;
@@ -22,41 +24,135 @@ color:white;
 position:relative;
 }
 
+/* 背景 */
+
 .background{
 position:fixed;
 inset:0;
-background:url('https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1600&auto=format&fit=crop') center/cover;
-filter:blur(25px) brightness(0.3);
-transform:scale(1.15);
+
+background:url('bg.jpg') center/cover no-repeat;
+
+filter:
+blur(22px)
+brightness(.25);
+
+transform:scale(1.12);
 }
+
+/* 遮罩 */
 
 .overlay{
 position:fixed;
 inset:0;
-background:linear-gradient(to right,rgba(0,0,0,.7),rgba(0,0,0,.45));
+
+background:
+linear-gradient(
+to right,
+rgba(0,0,0,.78),
+rgba(0,0,0,.45)
+);
 }
+
+/* 主体 */
 
 .container{
 position:relative;
-z-index:2;
+z-index:5;
+
 width:100%;
 height:100%;
+
 display:flex;
 align-items:center;
 justify-content:center;
+
 padding:5vw;
-gap:5vw;
+
+gap:6vw;
 }
 
-.album{
-width:38vw;
-max-width:340px;
+/* 左边 */
+
+.left{
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* 黑胶 */
+
+.vinyl{
+
+width:34vw;
+max-width:360px;
+
 aspect-ratio:1/1;
-border-radius:28px;
+
+border-radius:50%;
+
+background:
+radial-gradient(circle,#111 0%,#000 58%,#111 72%,#000 100%);
+
+position:relative;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+box-shadow:
+0 0 80px rgba(0,0,0,.85);
+
+animation:spin 8s linear infinite;
+
+animation-play-state:paused;
+}
+
+.vinyl.playing{
+animation-play-state:running;
+}
+
+/* 黑胶纹理 */
+
+.vinyl::before{
+content:'';
+
+position:absolute;
+inset:14px;
+
+border-radius:50%;
+
+border:2px solid rgba(255,255,255,.05);
+}
+
+/* 中心点 */
+
+.vinyl::after{
+content:'';
+
+position:absolute;
+
+width:16px;
+height:16px;
+
+border-radius:50%;
+
+background:#ddd;
+
+z-index:4;
+}
+
+/* 封面 */
+
+.album{
+
+width:45%;
+height:45%;
+
+border-radius:50%;
+
 overflow:hidden;
-box-shadow:0 20px 80px rgba(0,0,0,.55);
-flex-shrink:0;
-animation:float 5s ease-in-out infinite;
+
+z-index:3;
 }
 
 .album img{
@@ -65,155 +161,629 @@ height:100%;
 object-fit:cover;
 }
 
-@keyframes float{
-0%{transform:translateY(0px)}
-50%{transform:translateY(-10px)}
-100%{transform:translateY(0px)}
+/* 旋转 */
+
+@keyframes spin{
+from{
+transform:rotate(0deg);
+}
+to{
+transform:rotate(360deg);
+}
 }
 
+/* 右边 */
+
 .right{
+
 flex:1;
+
+max-width:620px;
+
 display:flex;
 flex-direction:column;
 justify-content:center;
 }
 
+/* 标题 */
+
 .title{
-font-size:clamp(28px,4vw,54px);
+font-size:clamp(32px,4vw,60px);
 font-weight:700;
+
 margin-bottom:12px;
-text-shadow:0 0 20px rgba(255,255,255,.25);
+
+text-shadow:
+0 0 24px rgba(255,255,255,.16);
 }
+
+/* 歌手 */
 
 .artist{
 font-size:18px;
 opacity:.7;
-margin-bottom:28px;
+
+margin-bottom:34px;
+}
+
+/* 歌词 */
+
+.lyric-container{
+
+height:42vh;
+
+overflow:hidden;
+
+position:relative;
+
+mask-image:
+linear-gradient(
+to bottom,
+transparent,
+white 15%,
+white 85%,
+transparent
+);
 }
 
 .lyrics{
-font-size:20px;
-line-height:2;
-color:white;
-text-shadow:
-0 0 8px rgba(255,255,255,.7),
-0 0 18px rgba(255,255,255,.45),
-0 0 40px rgba(255,255,255,.25);
-opacity:.92;
+
+display:flex;
+flex-direction:column;
+gap:26px;
+
+transition:.45s ease;
 }
 
-.tip{
-position:fixed;
-bottom:30px;
-left:50%;
-transform:translateX(-50%);
-padding:14px 24px;
-border-radius:999px;
-background:rgba(255,255,255,.12);
-backdrop-filter:blur(14px);
-font-size:14px;
-letter-spacing:2px;
-opacity:0;
+/* 单句歌词 */
+
+.line{
+
+font-size:22px;
+
+opacity:.35;
+
 transition:.35s;
-z-index:5;
+
+transform:scale(.96);
+
+text-shadow:
+0 0 10px rgba(255,255,255,.12);
 }
 
-.tip.show{
+/* 当前歌词 */
+
+.line.active{
+
 opacity:1;
+
+transform:scale(1.03);
+
+text-shadow:
+0 0 8px rgba(255,255,255,.8),
+0 0 24px rgba(255,255,255,.45),
+0 0 44px rgba(255,255,255,.22);
 }
+
+/* 进度条 */
+
+.progress-area{
+
+margin-top:34px;
+}
+
+.time{
+
+display:flex;
+justify-content:space-between;
+
+font-size:13px;
+
+opacity:.65;
+
+margin-bottom:8px;
+}
+
+.progress{
+
+width:100%;
+height:6px;
+
+background:
+rgba(255,255,255,.15);
+
+border-radius:999px;
+
+overflow:hidden;
+
+cursor:pointer;
+}
+
+.progress-bar{
+
+width:0%;
+height:100%;
+
+background:white;
+
+border-radius:999px;
+
+transition:.1s linear;
+}
+
+/* 控制 */
+
+.controls{
+
+margin-top:28px;
+
+display:flex;
+align-items:center;
+
+gap:18px;
+}
+
+.btn{
+
+width:72px;
+height:72px;
+
+border:none;
+
+border-radius:50%;
+
+cursor:pointer;
+
+font-size:28px;
+
+background:
+rgba(255,255,255,.12);
+
+color:white;
+
+backdrop-filter:blur(12px);
+
+transition:.25s;
+}
+
+.btn:active{
+transform:scale(.92);
+}
+
+/* 手机 */
 
 @media(max-width:900px){
+
 .container{
+
 flex-direction:column;
-text-align:center;
-padding-top:10vh;
-gap:35px;
+
+padding-top:8vh;
+
+gap:40px;
 }
 
-.album{
-width:72vw;
+.vinyl{
+width:76vw;
 max-width:320px;
 }
 
 .right{
-align-items:center;
+
+width:100%;
+
+text-align:center;
 }
 
-.lyrics{
-font-size:17px;
+.controls{
+justify-content:center;
 }
+
+.line{
+font-size:18px;
 }
+
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- 背景 -->
+
 <div class="background"></div>
+
 <div class="overlay"></div>
 
 <div class="container">
 
+<!-- 左边 -->
+
+<div class="left">
+
+<div class="vinyl" id="vinyl">
+
 <div class="album">
-<img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1200&auto=format&fit=crop">
+
+<img src="bg.jpg">
+
 </div>
+
+</div>
+
+</div>
+
+<!-- 右边 -->
 
 <div class="right">
-<div class="title">寂寞的人伤心的歌</div>
-<div class="artist">NFC MUSIC EXPERIENCE</div>
 
-<div class="lyrics">
-寂寞的人唱着伤心的歌<br>
-在凌晨的城市里漂泊<br>
-耳机里的旋律慢慢下坠<br>
-像情绪沉进黑色夜色
-</div>
+<div class="title" id="songTitle">
+歌曲名字
 </div>
 
+<div class="artist">
+NFC MUSIC PLAYER
 </div>
 
-<div class="tip" id="tip">TAP ANYWHERE TO PLAY MUSIC</div>
+<!-- 歌词 -->
 
-<audio id="music" autoplay loop playsinline webkit-playsinline>
-<source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-</audio>
+<div class="lyric-container">
+
+<div class="lyrics" id="lyrics"></div>
+
+</div>
+
+<!-- 进度 -->
+
+<div class="progress-area">
+
+<div class="time">
+
+<span id="current">
+0:00
+</span>
+
+<span id="duration">
+0:00
+</span>
+
+</div>
+
+<div class="progress" id="progress">
+
+<div class="progress-bar" id="progressBar"></div>
+
+</div>
+
+</div>
+
+<!-- 控制 -->
+
+<div class="controls">
+
+<button class="btn" id="prevBtn">
+⏮
+</button>
+
+<button class="btn" id="playBtn">
+▶
+</button>
+
+<button class="btn" id="nextBtn">
+⏭
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- 音乐 -->
+
+<audio id="audio" preload="metadata"></audio>
 
 <script>
-const music = document.getElementById('music');
-const tip = document.getElementById('tip');
 
-async function autoPlay(){
+/* 歌单 */
 
-try{
+const playlist = [
 
-music.muted = false;
-await music.play();
+{
+title:"第一首歌",
+file:"music.mp3",
+cover:"bg.jpg",
 
-}catch(err){
+lyrics:[
 
-music.muted = true;
+{time:0,text:"寂寞的人唱着伤心的歌"},
 
-try{
-await music.play();
-}catch(e){}
+{time:5,text:"凌晨三点霓虹还亮着"},
 
-music.pause();
+{time:10,text:"风吹过耳机里的回忆"},
 
-setTimeout(()=>{
-tip.classList.add('show');
-},500);
+{time:15,text:"像黑胶划过旧生活"},
+
+{time:20,text:"夜色沉进咖啡香气"},
+
+{time:25,text:"孤独的人还在循环播放"}
+
+]
+
+},
+
+{
+title:"第二首歌",
+file:"music2.mp3",
+cover:"bg2.jpg",
+
+lyrics:[
+
+{time:0,text:"这里是第二首歌"},
+
+{time:5,text:"继续添加歌词"}
+
+]
 
 }
+
+];
+
+/* DOM */
+
+const audio =
+document.getElementById('audio');
+
+const lyricsEl =
+document.getElementById('lyrics');
+
+const playBtn =
+document.getElementById('playBtn');
+
+const progressBar =
+document.getElementById('progressBar');
+
+const progress =
+document.getElementById('progress');
+
+const currentEl =
+document.getElementById('current');
+
+const durationEl =
+document.getElementById('duration');
+
+const titleEl =
+document.getElementById('songTitle');
+
+const vinyl =
+document.getElementById('vinyl');
+
+/* 当前歌曲 */
+
+let currentSong = 0;
+
+/* 加载歌曲 */
+
+function loadSong(index){
+
+const song = playlist[index];
+
+audio.src = song.file;
+
+titleEl.innerHTML = song.title;
+
+/* 背景 */
+
+document.querySelector('.background')
+.style.background =
+`url('${song.cover}') center/cover`;
+
+/* 封面 */
+
+document.querySelector('.album img')
+.src = song.cover;
+
+/* 歌词 */
+
+lyricsEl.innerHTML='';
+
+song.lyrics.forEach(line=>{
+
+const div =
+document.createElement('div');
+
+div.classList.add('line');
+
+div.innerText = line.text;
+
+lyricsEl.appendChild(div);
+
+});
+
 }
 
-autoPlay();
+/* 播放 */
 
-function startMusic(){
-music.muted = false;
-music.play();
-tip.classList.remove('show');
+function playSong(){
+
+audio.play();
+
+playBtn.innerHTML='❚❚';
+
+vinyl.classList.add('playing');
+
 }
 
-document.body.addEventListener('click',startMusic);
+/* 暂停 */
+
+function pauseSong(){
+
+audio.pause();
+
+playBtn.innerHTML='▶';
+
+vinyl.classList.remove('playing');
+
+}
+
+/* 播放暂停 */
+
+playBtn.addEventListener('click',()=>{
+
+if(audio.paused){
+
+playSong();
+
+}else{
+
+pauseSong();
+
+}
+
+});
+
+/* 上一首 */
+
+document.getElementById('prevBtn')
+.addEventListener('click',()=>{
+
+currentSong--;
+
+if(currentSong<0){
+
+currentSong=
+playlist.length-1;
+
+}
+
+loadSong(currentSong);
+
+playSong();
+
+});
+
+/* 下一首 */
+
+document.getElementById('nextBtn')
+.addEventListener('click',()=>{
+
+currentSong++;
+
+if(currentSong>=playlist.length){
+
+currentSong=0;
+
+}
+
+loadSong(currentSong);
+
+playSong();
+
+});
+
+/* 时间格式 */
+
+function formatTime(time){
+
+const min =
+Math.floor(time/60);
+
+const sec =
+Math.floor(time%60);
+
+return `${min}:${sec<10?'0'+sec:sec}`;
+
+}
+
+/* 更新进度 */
+
+audio.addEventListener('timeupdate',()=>{
+
+const percent =
+(audio.currentTime/audio.duration)*100;
+
+progressBar.style.width =
+percent+'%';
+
+currentEl.innerHTML =
+formatTime(audio.currentTime);
+
+durationEl.innerHTML =
+formatTime(audio.duration);
+
+/* 歌词同步 */
+
+const song =
+playlist[currentSong];
+
+const lines =
+document.querySelectorAll('.line');
+
+song.lyrics.forEach((line,index)=>{
+
+if(audio.currentTime>=line.time){
+
+lines.forEach(l=>
+l.classList.remove('active')
+);
+
+lines[index]
+.classList.add('active');
+
+/* 滚动 */
+
+lyricsEl.style.transform =
+`translateY(-${index*48}px)`;
+
+}
+
+});
+
+});
+
+/* 点击进度条 */
+
+progress.addEventListener('click',e=>{
+
+const width =
+progress.clientWidth;
+
+const clickX =
+e.offsetX;
+
+audio.currentTime =
+(clickX/width)
+*audio.duration;
+
+});
+
+/* 自动下一首 */
+
+audio.addEventListener('ended',()=>{
+
+currentSong++;
+
+if(currentSong>=playlist.length){
+
+currentSong=0;
+
+}
+
+loadSong(currentSong);
+
+playSong();
+
+});
+
+/* 初始化 */
+
+loadSong(currentSong);
+
+/* 自动播放 */
+
+playSong();
+
 </script>
 
 </body>
